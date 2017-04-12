@@ -2,7 +2,7 @@
 #include "w5500.h"
 #include <stdlib.h>
 #include "driverlib.h"
-
+#include <stdio.h>
 volatile unsigned int dbg_txwr, dbg_rxrd;
 
 u_int localPort = 4000;
@@ -118,15 +118,17 @@ void connect(u_char s, u_char * addr, u_int port) {
 
 // register read & write
 u_char readRegisterByte(u_char offset, u_char control) {
-	u_char byte = 0;
-	wizSelect();;
+	uint8_t byte;
 
+	wizSelect();;
 	sendReceiveByteSPI(0);
 	sendReceiveByteSPI(offset);
 	sendReceiveByteSPI(control); // RWB_READ is 0, so we just skip it
 	byte = sendReceiveByteSPI(0);
-
 	wizDeselect();;
+	//if(byte != 0x0a){
+		printf("0x%x\n", byte);
+	//}
 	return byte;
 }
 void writeRegisterByte(u_char offset, u_char control, u_char byte) {

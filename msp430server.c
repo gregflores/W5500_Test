@@ -4,13 +4,14 @@
 #include "w5500.h"
 #include "tags.h"
 #include "driverlib.h"
+#include <stdio.h>
 
 #define _delay_cycles(x) __delay_cycles(x)
 
 ///////////////////////////////////////////////////////////////
 // W5200 network configuration
 ///////////////////////////////////////////////////////////////
-const u_char MAC[6] = { 0x00, 0x08, 0xDC, 0x04, 0x03, 0x00 }; // WIZnet's base address: 00-08-DC (04-03-00, can you guess what that is?)
+const u_char MAC[6] = { 0x00, 0x08, 0xDC, 0x05, 0xB4, 0x38 }; // WIZnet's base address: 00-08-DC (04-03-00, can you guess what that is?)
 //const u_char IP[4] = { 192, 168, 168, 43 }; // local IP
 //const u_char gatewayIP[4] = { 192, 168, 168, 2 }; // gateway IP
 //const u_char subnetMask[4] = { 255, 255, 255, 0 }; // subnet mask
@@ -288,35 +289,40 @@ void configureMSP430() {
 	    //
 	    // Configure SPI peripheral.
 	    //
-		MAP_GPIO_setAsPeripheralModuleFunctionInputPin(ETH_MOSI_PORT,
-	                                                ETH_MOSI_PIN,
-	                                                GPIO_PRIMARY_MODULE_FUNCTION); //MOSI
 
-		MAP_GPIO_setAsPeripheralModuleFunctionInputPin(ETH_MISO_PORT,
-	                                                ETH_MISO_PIN,
-													GPIO_PRIMARY_MODULE_FUNCTION); //MISO
-
-		MAP_GPIO_setAsPeripheralModuleFunctionInputPin(ETH_SCLK_PORT,
-	    											ETH_SCLK_PIN,
-													GPIO_PRIMARY_MODULE_FUNCTION); //SCLK
 
 	    eUSCI_SPI_MasterConfig spiMasterConfig =
 	    {
-	        EUSCI_SPI_CLOCKSOURCE_SMCLK,                      		// SMCLK Clock Source
+	        EUSCI_B_SPI_CLOCKSOURCE_SMCLK,                      		// SMCLK Clock Source
 	        MAP_CS_getSMCLK(),                                  			// Get SMCLK frequency
-	        16000000,                                                	// SPICLK = 20 MHz
-	        EUSCI_SPI_MSB_FIRST,                             			// MSB First
-			EUSCI_SPI_PHASE_DATA_CHANGED_ONFIRST_CAPTURED_ON_NEXT, 	// Phase //  EUSCI_B_SPI_PHASE_DATA_CHANGED_ONFIRST_CAPTURED_ON_NEXT
-	        EUSCI_SPI_CLOCKPOLARITY_INACTIVITY_LOW,         			// Low polarity
-			EUSCI_SPI_3PIN                                   			// SPI Mode
+	        8000000,                                                	// SPICLK = 20 MHz
+	        EUSCI_B_SPI_MSB_FIRST,                             			// MSB First
+			EUSCI_B_SPI_PHASE_DATA_CAPTURED_ONFIRST_CHANGED_ON_NEXT, 	// Phase //  EUSCI_SPI_PHASE_DATA_CHANGED_ONFIRST_CAPTURED_ON_NEXT EUSCI_SPI_PHASE_DATA_CAPTURED_ONFIRST_CHANGED_ON_NEXT
+	        EUSCI_B_SPI_CLOCKPOLARITY_INACTIVITY_LOW,         			// Low polarity
+			EUSCI_B_SPI_3PIN                                   			// SPI Mode
 	    };
 
-	    SPI_initMaster(ETH_EUSCI_MODULE, &spiMasterConfig);
+
+	    MAP_GPIO_setAsPeripheralModuleFunctionOutputPin(ETH_MOSI_PORT,
+														ETH_MOSI_PIN,
+														GPIO_PRIMARY_MODULE_FUNCTION); //MOSI
+
+		MAP_GPIO_setAsPeripheralModuleFunctionInputPin(ETH_MISO_PORT,
+													ETH_MISO_PIN,
+													GPIO_PRIMARY_MODULE_FUNCTION); //MISO
+
+		MAP_GPIO_setAsPeripheralModuleFunctionOutputPin(ETH_SCLK_PORT,
+													ETH_SCLK_PIN,
+													GPIO_PRIMARY_MODULE_FUNCTION); //SCLK
+		//UCB0BR0 |= 0x02;
+		SPI_initMaster(ETH_EUSCI_MODULE, &spiMasterConfig);
 	    SPI_enableModule(ETH_EUSCI_MODULE);
 
-	    SPI_clearInterruptFlag(ETH_EUSCI_MODULE,  ETH_EUSCI_REC_INT);
-	    //SPI_enableInterrupt(ETH_EUSCI_MODULE, ETH_EUSCI_REC_INT);
+	    SPI_enableInterrupt(ETH_EUSCI_MODULE, ETH_EUSCI_REC_INT);
 	    Interrupt_enableInterrupt(ETH_INT_ENABLE);
+	    SPI_clearInterruptFlag(ETH_EUSCI_MODULE,  ETH_EUSCI_REC_INT);
+
+
 }
 
 void startClient(u_char s, u_char *destinationIP, u_char port) {
@@ -436,13 +442,17 @@ u_char toHex(u_char c) {
  * Send and return byte via SPI
  */
 u_char sendReceiveByteSPI(u_char byte) {
-	u_char receivedByte = 0;
-
+	uint8_t receivedByte;
+	//UCB0TXBUF = byte;
+	//while(!(UCB0IFG & UCTXIFG));
+	//while(UCB0STAT & UCBUSY);
+	//receivedByte = UCB0RXBUF;
 	while (!(SPI_getInterruptStatus(ETH_EUSCI_MODULE,ETH_EUSCI_TRAN_INT)));
+
 	SPI_transmitData(ETH_EUSCI_MODULE, byte);
 	while (!(SPI_getInterruptStatus(ETH_EUSCI_MODULE,ETH_EUSCI_TRAN_INT)));
 	receivedByte = SPI_receiveData(ETH_EUSCI_MODULE);
-
+	//printf("0x%x\n", receivedByte);
 	return receivedByte;
 }
 
@@ -476,14 +486,14 @@ void resetW5500(void) {
 void delay_us(u_char time_us) {
 	u_char c = 0;
 	while (c++ < time_us) {
-		_delay_cycles(16);
+		_delay_cycles(48);
 	}
 }
 
 void delay_ms(u_int time_ms) {
 	u_int c = 0;
 	while (c++ < time_ms) {
-		_delay_cycles(16000);
+		_delay_cycles(48000);
 	}
 }
 

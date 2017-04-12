@@ -30,9 +30,19 @@ const u_int destinationPort = 80; // destination port
 int main(void) {
 	int ret;
 	struct DHCPrenew dhcplease;
-	SystemCoreClockUpdate();
-	//configureMSP430();
-	SystemInit();
+	MAP_WDT_A_holdTimer();
+    MAP_Interrupt_disableMaster();
+    FPU_enableModule();
+    FlashCtl_setWaitState(FLASH_BANK0, 2);
+    FlashCtl_setWaitState(FLASH_BANK1, 2);
+    PCM_setPowerState(PCM_AM_DCDC_VCORE1);
+    CS_setDCOCenteredFrequency(CS_DCO_FREQUENCY_48);
+    CS_setDCOFrequency(48000000);
+    MAP_CS_initClockSignal(CS_MCLK, CS_DCOCLK_SELECT, CS_CLOCK_DIVIDER_1);
+    MAP_CS_initClockSignal(CS_SMCLK, CS_DCOCLK_SELECT, CS_CLOCK_DIVIDER_1);
+    MAP_CS_initClockSignal(CS_HSMCLK, CS_DCOCLK_SELECT, CS_CLOCK_DIVIDER_1);
+    MAP_CS_initClockSignal(CS_ACLK, CS_REFOCLK_SELECT, CS_CLOCK_DIVIDER_1);
+    _delay_cycles(1000000);
 	//wiznet_debug_init();
 
 	// Wait for P1.3 button to be pressed before writing to UART; helps with MSP430G2 LaunchPad serial bug
@@ -46,7 +56,9 @@ int main(void) {
 
 	// DHCP stuff
 	printf("Waiting for PHY:");
-	while ( !(getPHYCFGR() & PHYCFGR_LNK_ON) ) ;
+	while ( !(getPHYCFGR() & PHYCFGR_LNK_ON) ){
+	;
+	}
 	printf(" PHY up\n");
 
 	// Configure DHCP; don't care what the DNS server is
@@ -63,13 +75,13 @@ int main(void) {
 		MAP_GPIO_setAsOutputPin(GPIO_PORT_P1, GPIO_PIN0);
 		while(1) {
 			MAP_GPIO_toggleOutputOnPin(GPIO_PORT_P1,GPIO_PIN0);
-			_delay_cycles(4000000);
+			_delay_cycles(12000000);
 		}
 	}
 
 	printf("DHCP lease information: %u seconds, DHCPserver = %d.%d.%d.%d\n", dhcplease.seconds, dhcplease.dhcpserver[0], dhcplease.dhcpserver[1], dhcplease.dhcpserver[2], dhcplease.dhcpserver[3]);
 
-	_delay_cycles(80000000);  // 5 seconds
+	_delay_cycles(5*48000000);  // 5 seconds
 	// Perform DHCP renew
 	printf("PERFORMING DHCP RENEWAL\n");
 	dhcplease.do_renew = 1;
@@ -130,6 +142,6 @@ void runAsClient() {
 // client example, wait for button press or some other event
 void waitForEvent() {
 	// test delay
-	_delay_cycles(32000000);
+	_delay_cycles(2*48000000);
 }
 

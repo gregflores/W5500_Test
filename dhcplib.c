@@ -143,7 +143,7 @@ int dhcp_read_header(uint8_t sockfd, uint8_t *scratch, uint8_t *ciaddr, uint8_t 
 		return -1;
 	}
 	readFromRXBufferPiecemeal(sockfd, xid, 4);  // Store XID for caller
-	printf("%s: Read XID: %h%h%h%h\n", funcname, xid[0], xid[1], xid[2], xid[3]);
+	printf("%s: Read XID: %x%x%x%x\n", funcname, xid[0], xid[1], xid[2], xid[3]);
 	readFromRXBufferPiecemeal(sockfd, scratch, 4);
 	printf("%s: SECS=%x, FLAGS=%x\n", funcname, ntohs(scratch), ntohs(scratch+2));
 
@@ -156,7 +156,7 @@ int dhcp_read_header(uint8_t sockfd, uint8_t *scratch, uint8_t *ciaddr, uint8_t 
 	readFromRXBufferPiecemeal(sockfd, scratch, 4);
 	if (scratch[0] != DHCP_MAGIC_COOKIE_0 || scratch[1] != DHCP_MAGIC_COOKIE_1 ||
 	    scratch[2] != DHCP_MAGIC_COOKIE_2 || scratch[3] != DHCP_MAGIC_COOKIE_3) {
-		printf("%s: Read header with invalid magic cookie (%h%h%h%h)\n", funcname, scratch[0], scratch[1], scratch[2], scratch[3]);
+		printf("%s: Read header with invalid magic cookie (%x%x%x%x)\n", funcname, scratch[0], scratch[1], scratch[2], scratch[3]);
 		return -1;
 	}
 
@@ -219,7 +219,7 @@ int dhcp_send_packet(uint8_t sockfd, uint8_t *scratch, uint8_t dhcp_msgtype)
 
 	getSHAR(ourmac);
 
-	printf("%s: Our MAC = %h:%h:%h:%h:%h:%h\n", funcname, ourmac[0], ourmac[1], ourmac[2], ourmac[3], ourmac[4], ourmac[5]);
+	printf("%s: Our MAC = %x:%x:%x:%x:%x:%x\n", funcname, ourmac[0], ourmac[1], ourmac[2], ourmac[3], ourmac[4], ourmac[5]);
 
 
 	// DHCP header
@@ -261,7 +261,7 @@ int dhcp_send_packet(uint8_t sockfd, uint8_t *scratch, uint8_t dhcp_msgtype)
 	// Finished
 	dhcp_write_option(sockfd, DHCP_OPTCODE_END, 0, NULL);
 
-	send(sockfd, NULL, (uint16_t *)scratch, 1);  // Submit SEND command to commit the packet over the wire
+	send(sockfd, NULL, (u_int *)scratch, 1);  // Submit SEND command to commit the packet over the wire
 
 	return 0;
 }
@@ -464,9 +464,9 @@ int dhcp_loop_configure(uint8_t *dnsaddr, struct DHCPrenew *lease)
 											else
 												lease->seconds = ntohs(scratch+2);
 											memcpy(lease->dhcpserver, siaddr, 4);
-											printf("%s: Renewal time (T1) = %n seconds, reporting %u to application\n", funcname, ((uint32_t)ntohs(scratch) << 16) | (uint32_t)ntohs(scratch+2), lease->seconds);
+											printf("%s: Renewal time (T1) = %d seconds, reporting %d to application\n", funcname, ((uint32_t)ntohs(scratch) << 16) | (uint32_t)ntohs(scratch+2), lease->seconds);
 										} else {
-											printf("%s: Renewal time (T1) = %n seconds, application not requesting lease information.\n", funcname, ((uint32_t)ntohs(scratch) << 16) | (uint32_t)ntohs(scratch+2));
+											printf("%s: Renewal time (T1) = %d seconds, application not requesting lease information.\n", funcname, ((uint32_t)ntohs(scratch) << 16) | (uint32_t)ntohs(scratch+2));
 										}
 									} else {
 										printf("%s: Option %u Renewal time (T1) found but optlen invalid; optlen = %d\n", funcname, *optcode, *optlen);
@@ -575,7 +575,7 @@ int dhcp_loop_configure(uint8_t *dnsaddr, struct DHCPrenew *lease)
 				}
 				break;  // If there is no data waiting, loop will just continue another round.
 		}
-		_delay_cycles(250000);  // 1/100sec at 25MHz (1/64sec at 16MHz)
+		_delay_cycles(500000);  // 1/100sec at 25MHz (1/64sec at 16MHz)
 		loopcount++;
 	}
 
