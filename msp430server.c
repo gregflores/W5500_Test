@@ -293,13 +293,13 @@ void configureMSP430() {
 
 	    eUSCI_SPI_MasterConfig spiMasterConfig =
 	    {
-	        EUSCI_B_SPI_CLOCKSOURCE_SMCLK,                      		// SMCLK Clock Source
+	        EUSCI_A_SPI_CLOCKSOURCE_SMCLK,                      		// SMCLK Clock Source
 	        MAP_CS_getSMCLK(),                                  			// Get SMCLK frequency
 	        8000000,                                                	// SPICLK = 20 MHz
-	        EUSCI_B_SPI_MSB_FIRST,                             			// MSB First
-			EUSCI_B_SPI_PHASE_DATA_CAPTURED_ONFIRST_CHANGED_ON_NEXT, 	// Phase //  EUSCI_SPI_PHASE_DATA_CHANGED_ONFIRST_CAPTURED_ON_NEXT EUSCI_SPI_PHASE_DATA_CAPTURED_ONFIRST_CHANGED_ON_NEXT
-	        EUSCI_B_SPI_CLOCKPOLARITY_INACTIVITY_LOW,         			// Low polarity
-			EUSCI_B_SPI_3PIN                                   			// SPI Mode
+	        EUSCI_A_SPI_MSB_FIRST,                             			// MSB First
+			EUSCI_A_SPI_PHASE_DATA_CAPTURED_ONFIRST_CHANGED_ON_NEXT, 	// Phase //  EUSCI_SPI_PHASE_DATA_CHANGED_ONFIRST_CAPTURED_ON_NEXT EUSCI_SPI_PHASE_DATA_CAPTURED_ONFIRST_CHANGED_ON_NEXT
+	        EUSCI_A_SPI_CLOCKPOLARITY_INACTIVITY_LOW,         			// Low polarity
+			EUSCI_A_SPI_3PIN                                   			// SPI Mode
 	    };
 
 
