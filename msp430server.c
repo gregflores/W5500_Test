@@ -75,16 +75,17 @@ void processRequest(Request *request) {
 	u_char success = '1';
 	openDocument();
 	u_char u = 0;
-	while (u < 2) {
+	while (u < 1) {
 		u_char c = 0;
 		addStringToBuffer(sUNIVERSE_OPEN);
 		addCharToBufferAsHex(u);
 		addStringToBuffer(sCLOSE_TAG);
-		while (c < 64) {
+		while (c < 32) {
 			addStringToBuffer(sCHANNEL_OPEN);
 			addCharToBufferAsHex(c);
 			addStringToBuffer(sCLOSE_TAG);
-			addCharToBufferAsHex(dmx[u][c]);
+			//addStringToBuffer("Ian is the fucking worst");
+			addCharToBufferAsHex(c);
 			addStringToBuffer(sCHANNEL_CLOSE);
 			c++;
 		}

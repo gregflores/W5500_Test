@@ -23,8 +23,13 @@ u_int _tx_wr_cache[8], _rx_rd_cache[8];  /* Used for "piecemeal" writes & reads 
  * wait until socket close_sd status
  */
 void waitUntilSocketClosed(u_char s) {
-	while (getSn_SR(s) != SOCK_CLOSED)
-		;
+	uint16_t count = 0;
+	while (getSn_SR(s) != SOCK_CLOSED){
+		count++;
+		if(count == 1000)
+			return;
+	}
+
 }
 
 /**
@@ -127,7 +132,7 @@ u_char readRegisterByte(u_char offset, u_char control) {
 	byte = sendReceiveByteSPI(0);
 	wizDeselect();;
 	//if(byte != 0x0a){
-		printf("0x%x\n", byte);
+		//printf("0x%x\n", byte);
 	//}
 	return byte;
 }

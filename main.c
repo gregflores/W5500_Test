@@ -21,15 +21,15 @@ const u_char sourceIP[4] = { 192, 168, 1, 10 }; // local IP
 const u_char gatewayIP[4] = { 192, 168, 1, 1 }; // gateway IP
 const u_char subnetMask[4] = { 255, 255, 255, 0 }; // subnet mask
 // network configuration for client mode
-const u_char destinationIP[4] = { 192, 168, 1, 1 }; // destination IP
+const u_char destinationIP[4] = { 192, 168, 1, 3 }; // destination IP
 const u_int destinationPort = 80; // destination port
 
 /*
  * main.c
  */
 int main(void) {
-	int ret;
-	struct DHCPrenew dhcplease;
+	//int ret;
+	//struct DHCPrenew dhcplease;
 	MAP_WDT_A_holdTimer();
     MAP_Interrupt_disableMaster();
     FPU_enableModule();
@@ -55,12 +55,12 @@ int main(void) {
 	configureW5500(sourceIP, gatewayIP, subnetMask);
 
 	// DHCP stuff
-	printf("Waiting for PHY:");
-	while ( !(getPHYCFGR() & PHYCFGR_LNK_ON) ){
-	;
-	}
-	printf(" PHY up\n");
-
+	//printf("Waiting for PHY:");
+	//while ( !(getPHYCFGR() & PHYCFGR_LNK_ON) ){
+	//;
+	//}
+	//printf(" PHY up\n");
+/*
 	// Configure DHCP; don't care what the DNS server is
 	// Note that the currently-configured IP, gateway and subnetmask get nuked at the beginning of this function.
 	dhcplease.do_renew = 0;
@@ -72,12 +72,13 @@ int main(void) {
 		//P1DIR |= BIT0;
 		//P1REN &= ~BIT0;
 		//P1OUT |= BIT0;
-		MAP_GPIO_setAsOutputPin(GPIO_PORT_P1, GPIO_PIN0);
+		//MAP_GPIO_setAsOutputPin(GPIO_PORT_P1, GPIO_PIN0);
 		while(1) {
-			MAP_GPIO_toggleOutputOnPin(GPIO_PORT_P1,GPIO_PIN0);
+			//MAP_GPIO_toggleOutputOnPin(GPIO_PORT_P1,GPIO_PIN0);
 			_delay_cycles(12000000);
 		}
 	}
+	//_delay_cycles(5*48000000);  // 5 seconds
 
 	printf("DHCP lease information: %u seconds, DHCPserver = %d.%d.%d.%d\n", dhcplease.seconds, dhcplease.dhcpserver[0], dhcplease.dhcpserver[1], dhcplease.dhcpserver[2], dhcplease.dhcpserver[3]);
 
@@ -88,11 +89,11 @@ int main(void) {
 	ret = dhcp_loop_configure(NULL, &dhcplease);
 	if (ret != 0)
 		printf("dhcp_loop_configure returned error: %s\n", dhcp_strerror(dhcplib_errno));
-
+*/
 
 	while (1) {
-		//runAsServer();
-		runAsClient();
+		runAsServer();
+		//runAsClient();
 	}
 }
 
